@@ -52,11 +52,11 @@ You can find ready-made plugins and inspiration for creating your own in the fol
 ---
 
 ## 📁 Resulting folder structure
-Documents/
-└── Vencord/
-├── src/
-│ └── userplugins/
-│ └── your-plugin-repository
+　Documents/
+　└── Vencord/
+　├── src/
+　│ └── userplugins/
+　│ └── your-plugin-repository
 
 
 ---
