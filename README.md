@@ -1,90 +1,71 @@
 # 🚀 Vencord Plugin Installer (Auto Setup Script)
 
-This batch script automatically installs and configures a full Vencord environment and makes it easy to install plugins.
-
----
-
-## ⚙️ What this script does
-
-When you run the script, it will:
-
-### 🔧 Automatic dependency setup
-- Checks if **Git** is installed
-  - If not → downloads and installs it automatically
-- Checks if **Node.js** is installed
-  - If not → downloads and installs it automatically
-
----
-
-### 💬 Discord handling
-- Closes Discord at the start of the process
-- Restarts Discord automatically at the end
-
----
-
-### 📦 Vencord setup
-- Downloads the Vencord installer
-- Runs the installer
-- Clones the Vencord repository into your Documents folder
-- Installs required dependencies using `pnpm`
-
----
-
-## 🔍 Where to find Vencord plugins
-
-You can find ready-made plugins and inspiration for creating your own in the following places:
-
-### 📦 GitHub (Vencord community)
-- https://github.com/topics/vencord-plugin  
-- https://github.com/topics/vencord-plugin  
-- https://github.com/topics/vencord  
-
-### 💡 Tips
-- Look for repositories tagged with `vencord-plugin`
-- Always check the plugin’s README before installing
-- Make sure the plugin is up to date and compatible with your Vencord version
-
-### 🧩 Plugin system
-- Creates a `userplugins` folder (if it doesn't exist)
-- Asks for a plugin Git repository URL
-- Clones the plugin into the Vencord `userplugins` directory
-
----
-
-## 📁 Resulting folder structure
-　Documents/
-　└── Vencord/
-　├── src/
-　│ └── userplugins/
-　│ └── your-plugin-repository
-
+## ⚙️ How it works
+This script automatically:
+- checks and installs **Git** (if missing)
+- checks and installs **Node.js** (if missing)
+- closes Discord during installation
+- downloads and installs Vencord
+- clones the Vencord repository into the Documents folder
+- installs dependencies using `pnpm`
+- creates a `userplugins` folder
+- allows installing plugins from GitHub via link
+- restarts Discord after setup
 
 ---
 
 ## ▶️ How to use
+1. Download the `.bat` file  
+2. Right-click it → **Run as Administrator**  
+3. Follow the instructions in the terminal  
 
-1. Download the `.bat` file
-2. Right-click it → **Run as Administrator**
-3. Follow the instructions in the terminal
+---
+
+## 📁 Folder structure
+After installation, the structure looks like this:
+  Documents/
+    └── Vencord/
+      ├── src/
+      │ └── userplugins/
+      │ └── (your plugins go here)
+
+
+
+---
+
+## 🔍 Where to get plugins
+You can find Vencord plugins on GitHub:
+- https://github.com/topics/vencord-plugin
+- https://github.com/topics/vencord-plugin
+- https://github.com/topics/vencord
+
+📌 Plugins (open repo, click green **Code** button, copy HTTPS link or add `.git`, read README and check compatibility)
+
+---
+
+## 🧩 Plugin installation
+- the script asks for a GitHub repository URL  
+- the plugin is cloned into `userplugins`  
+- Vencord automatically loads it  
 
 ---
 
 ## ⚠️ Requirements
-
-- Windows 10 / 11
-- Internet connection
-- Administrator privileges (recommended)
-
----
-
-## 🧠 Notes
-
-- The script automatically installs missing dependencies
-- If Git or Node.js are already installed, they will be skipped
-- Discord is automatically restarted after setup
+- Windows 10 / 11  
+- Internet connection  
+- (recommended) administrator privileges  
+- **Discord installed**: https://discord.com/download  
 
 ---
 
-## 📌 Author
+## 🧠 Author
+wimiz - matuesz2024  
 
-wimiz - matuesz2024
+---
+
+## ❗ Disclaimer
+The author is not responsible for:
+- system errors or crashes  
+- Discord or Vencord issues  
+- effects caused by plugins or script usage  
+- any damage resulting from installation or use of this software  
