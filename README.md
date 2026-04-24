@@ -24,10 +24,10 @@ This script automatically:
 ## 📁 Folder structure
 After installation, the structure looks like this:
   Documents/
-    └── Vencord/
-      ├── src/
-      │ └── userplugins/
-      │ └── (your plugins go here)
+-    └── Vencord/
+ -     ├── src/
+ -     │ └── userplugins/
+ -     │ └── (your plugins go here)
 
 
 
