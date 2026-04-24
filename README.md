@@ -30,6 +30,20 @@ When you run the script, it will:
 
 ---
 
+## 🔍 Where to find Vencord plugins
+
+You can find ready-made plugins and inspiration for creating your own in the following places:
+
+### 📦 GitHub (Vencord community)
+- https://github.com/topics/vencord-plugin  
+- https://github.com/topics/vencord-plugin  
+- https://github.com/topics/vencord  
+
+### 💡 Tips
+- Look for repositories tagged with `vencord-plugin`
+- Always check the plugin’s README before installing
+- Make sure the plugin is up to date and compatible with your Vencord version
+
 ### 🧩 Plugin system
 - Creates a `userplugins` folder (if it doesn't exist)
 - Asks for a plugin Git repository URL
