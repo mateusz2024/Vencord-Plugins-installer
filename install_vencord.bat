@@ -84,8 +84,7 @@ goto :pluginmenu
 
 :listplugins
 set "pluginurl="
-call :listpage1
-goto :listinputloop
+goto :listpage1
 
 :listpage1
 cls
@@ -124,7 +123,7 @@ echo         - BUNDLE: another collection of several community plugins.
 echo.
 echo   [n] Next page   [b] Back to main menu
 echo.
-exit /b
+goto :listinputloop
 
 :listpage2
 cls
@@ -160,19 +159,13 @@ echo         - BUNDLE: an assortment of third-party plugins.
 echo.
 echo   [p] Previous page   [b] Back to main menu
 echo.
-exit /b
+goto :listinputloop
 
 :listinputloop
 set /p listchoice=  Select a plugin number, [n]/[p] to change page, or [b] for back: 
 
-if /i "%listchoice%"=="n" (
-    call :listpage2
-    goto :listinputloop
-)
-if /i "%listchoice%"=="p" (
-    call :listpage1
-    goto :listinputloop
-)
+if /i "%listchoice%"=="n" goto :listpage2
+if /i "%listchoice%"=="p" goto :listpage1
 if /i "%listchoice%"=="b" goto :pluginmenu
 
 if "%listchoice%"=="1" set pluginurl=https://github.com/nicola02nb/completeDiscordQuest
