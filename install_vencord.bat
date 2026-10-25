@@ -1,35 +1,100 @@
 @echo off
 setlocal enabledelayedexpansion
+title Vencord Installer
+
+REM ---- Administrator rights are needed to install Git and Node.js ----
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Requesting administrator privileges...
+    powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
+    exit /b
+)
+cd /d "%~dp0"
+
 echo Closing Discord...
 taskkill /F /IM Discord.exe >nul 2>&1
 echo.
+
+REM ======================= GIT =======================
 echo Checking Git...
-git --version >nul 2>&1
+where git >nul 2>&1
+if %errorlevel% equ 0 goto :git_ok
+
+echo Git is NOT installed. Installing...
+where winget >nul 2>&1
+if %errorlevel% neq 0 goto :git_direct
+winget install --id Git.Git -e --source winget --silent --accept-package-agreements --accept-source-agreements
+goto :git_refresh
+
+:git_direct
+echo winget not found, downloading the Git installer directly...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $r=Invoke-RestMethod 'https://api.github.com/repos/git-for-windows/git/releases/latest' -Headers @{'User-Agent'='vencord-installer'}; $a=$r.assets | Where-Object { $_.name -like 'Git-*-64-bit.exe' } | Select-Object -First 1; Invoke-WebRequest -Uri $a.browser_download_url -OutFile ($env:TEMP+'\git_installer.exe')"
+if not exist "%TEMP%\git_installer.exe" goto :git_refresh
+echo Installing Git...
+start /wait "" "%TEMP%\git_installer.exe" /VERYSILENT /NORESTART
+
+:git_refresh
+REM The current window does not see the new PATH yet, so add Git manually
+set "PATH=!PATH!;!ProgramFiles!\Git\cmd"
+where git >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Git is NOT installed. Downloading...
-    curl -L -o git_installer.exe https://github.com/git-for-windows/git/releases/latest/download/Git-64-bit.exe
-    echo Installing Git...
-    start /wait "" git_installer.exe /VERYSILENT /NORESTART
-) else (
-    echo Git is already installed.
+    echo.
+    echo ERROR: Git could not be installed automatically.
+    echo Please install it from https://git-scm.com/download/win and run this script again.
+    pause
+    exit /b 1
 )
+
+:git_ok
+echo Git is ready.
 echo.
+
+REM ======================= NODE.JS =======================
 echo Checking Node.js...
-node -v >nul 2>&1
+where node >nul 2>&1
+if %errorlevel% equ 0 goto :node_ok
+
+echo Node.js is NOT installed. Installing the latest LTS version...
+where winget >nul 2>&1
+if %errorlevel% neq 0 goto :node_direct
+winget install --id OpenJS.NodeJS.LTS -e --source winget --silent --accept-package-agreements --accept-source-agreements
+goto :node_refresh
+
+:node_direct
+echo winget not found, downloading the Node.js installer directly...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $i=Invoke-RestMethod 'https://nodejs.org/dist/index.json'; $v=($i | Where-Object { $_.lts } | Select-Object -First 1).version; Invoke-WebRequest -Uri ('https://nodejs.org/dist/'+$v+'/node-'+$v+'-x64.msi') -OutFile ($env:TEMP+'\node_installer.msi')"
+if not exist "%TEMP%\node_installer.msi" goto :node_refresh
+echo Installing Node.js...
+start /wait msiexec /i "%TEMP%\node_installer.msi" /quiet /norestart
+
+:node_refresh
+REM The current window does not see the new PATH yet, so add Node.js manually
+set "PATH=!PATH!;!ProgramFiles!\nodejs"
+where node >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Node.js is NOT installed. Downloading...
-    curl -L -o node_installer.msi https://nodejs.org/dist/latest/node-v20-x64.msi
-    echo Installing Node.js...
-    start /wait msiexec /i node_installer.msi /quiet /norestart
-) else (
-    echo Node.js is already installed.
+    echo.
+    echo ERROR: Node.js could not be installed automatically.
+    echo Please install it from https://nodejs.org and run this script again.
+    pause
+    exit /b 1
 )
+
+:node_ok
+set "PATH=!PATH!;!ProgramFiles!\nodejs;!APPDATA!\npm"
+echo Node.js is ready.
 echo.
+
+REM ======================= VENCORD INSTALLER =======================
 echo Downloading Vencord Installer...
-curl -L -o VencordInstaller.exe https://github.com/Vencord/Installer/releases/latest/download/VencordInstaller.exe
+curl -fL -o "%TEMP%\VencordInstaller.exe" https://github.com/Vencord/Installer/releases/latest/download/VencordInstaller.exe
+if not exist "%TEMP%\VencordInstaller.exe" (
+    echo ERROR: Could not download the Vencord Installer. Check your internet connection.
+    pause
+    exit /b 1
+)
 echo.
 echo Starting Vencord Installer...
-start /wait VencordInstaller.exe
+start /wait "" "%TEMP%\VencordInstaller.exe"
 echo.
 echo Moving to Documents folder...
 cd /d "%USERPROFILE%\Documents"
@@ -84,107 +149,57 @@ goto :pluginmenu
 
 :listplugins
 set "pluginurl="
-goto :listpage1
-
-:listpage1
 cls
 echo.
 echo   ##########################################################
-echo   #             AVAILABLE PLUGINS  (page 1/2)              #
+echo   #                  POPULAR  PLUGINS                      #
 echo   ##########################################################
 echo.
-echo    [1]  Complete Discord Quest
+echo    [1]  Message Logger Enhanced   (most popular third-party plugin)
+echo         - Logs deleted/edited messages, images and ghost pings.
+echo.
+echo    [2]  Complete Discord Quest
 echo         - Automatically completes Discord quests in the background.
 echo.
-echo    [2]  Fake Voice Options
-echo         - Adds fake/extra voice channel settings and options.
-echo.
-echo    [3]  Mute Alert
-echo         - Plays a sound alert when you get muted/unmuted.
-echo.
-echo    [4]  Giphy Gif Search
-echo         - Lets you search and send GIFs from Giphy directly in chat.
-echo.
-echo    [5]  Vencord Shazam
-echo         - Identifies songs playing in a voice channel, Shazam-style.
-echo.
-echo    [6]  Plugin Repo
-echo         - Adds an in-app browser to discover and install other
-echo           third-party Vencord plugins directly from Discord settings.
-echo.
-echo    [7]  Quest Completer (alt)
-echo         - Alternative, simpler quest-completing plugin.
-echo.
-echo    [8]  VencordPlugins (verticalsync)
-echo         - BUNDLE: a collection of several community plugins in one repo.
-echo.
-echo    [9]  vc-plugins (ImLvna)
-echo         - BUNDLE: another collection of several community plugins.
-echo.
-echo   [n] Next page   [b] Back to main menu
-echo.
-goto :listinputloop
-
-:listpage2
-cls
-echo.
-echo   ##########################################################
-echo   #             AVAILABLE PLUGINS  (page 2/2)              #
-echo   ##########################################################
-echo.
-echo   [10]  D3SOX Userplugins
-echo         - BUNDLE: BetterActivities, FollowUser, SilentTyping,
+echo    [3]  D3SOX Userplugins   (BUNDLE)
+echo         - BetterActivities, FollowUser, SilentTyping,
 echo           VoiceChatUtilities, MediaPlaybackSpeed and more.
 echo.
-echo   [11]  ErdbeerbaerLP Userplugins
-echo         - BUNDLE: a collection of various custom plugins.
+echo    [4]  NuzProjects Userplugins   (BUNDLE)
+echo         - Math Count, Auto Reactor, Staff Crowns,
+echo           Role Mention Icons, Fake Forward, Lock Group and more.
 echo.
-echo   [12]  nmsturcke Vencord-Plugins
-echo         - BUNDLE: handy plugins that never made it into official Vencord.
+echo    [5]  Last Online Tracker
+echo         - Shows when Discord users were last online.
 echo.
-echo   [13]  002-sans VencordPlugins
-echo         - BUNDLE: badge selectors, custom UI tweaks and more.
+echo    [6]  Activity Tracker
+echo         - Logs presence changes, typing and activity updates
+echo           and shows them in an in-app window.
 echo.
-echo   [14]  owoyi Userplugins
-echo         - BUNDLE: AutoAttendance, SendButton and more.
+echo    [7]  PluralKit Prism
+echo         - PluralKit integration for Vencord.
 echo.
-echo   [15]  zaher-neon Userplugins
-echo         - BUNDLE: a collection of various custom mods.
+echo    [8]  Song Spotlight
+echo         - Lets you pin songs to your Discord profile.
 echo.
-echo   [16]  theokyr Vencord-Plugins
-echo         - BUNDLE: UI enhancements, keyboard navigation, dev tools.
+echo    [9]  WakaTime
+echo         - Automatic time tracking and stats about your Discord usage.
 echo.
-echo   [17]  coreknee VencordPlugins
-echo         - BUNDLE: an assortment of third-party plugins.
+echo   [b] Back to main menu
 echo.
-echo   [p] Previous page   [b] Back to main menu
-echo.
-goto :listinputloop
+set /p listchoice=  Select a plugin number (or b for back): 
 
-:listinputloop
-set /p listchoice=  Select a plugin number, [n]/[p] to change page, or [b] for back: 
-
-if /i "%listchoice%"=="n" goto :listpage2
-if /i "%listchoice%"=="p" goto :listpage1
 if /i "%listchoice%"=="b" goto :pluginmenu
 
-if "%listchoice%"=="1" set pluginurl=https://github.com/nicola02nb/completeDiscordQuest
-if "%listchoice%"=="2" set pluginurl=https://github.com/eightcon/FakeVoiceOptions
-if "%listchoice%"=="3" set pluginurl=https://github.com/FawazTakahji/muteAlert.desktop
-if "%listchoice%"=="4" set pluginurl=https://github.com/caffeinepx/GiphyGifSearch
-if "%listchoice%"=="5" set pluginurl=https://github.com/kadrxy/vencord-shazam
-if "%listchoice%"=="6" set pluginurl=https://github.com/ScattrdBlade/pluginRepo
-if "%listchoice%"=="7" set pluginurl=https://github.com/Koma4k0/Quest-Completer
-if "%listchoice%"=="8" set pluginurl=https://github.com/verticalsync/VencordPlugins
-if "%listchoice%"=="9" set pluginurl=https://github.com/ImLvna/vc-plugins
-if "%listchoice%"=="10" set pluginurl=https://github.com/D3SOX/vencord-userplugins
-if "%listchoice%"=="11" set pluginurl=https://github.com/ErdbeerbaerLP/vencord-userplugins
-if "%listchoice%"=="12" set pluginurl=https://github.com/nmsturcke/Vencord-Plugins
-if "%listchoice%"=="13" set pluginurl=https://github.com/002-sans/VencordPlugins
-if "%listchoice%"=="14" set pluginurl=https://github.com/owoyi/vencord-userplugins
-if "%listchoice%"=="15" set pluginurl=https://github.com/zaher-neon/vencord-userplugins
-if "%listchoice%"=="16" set pluginurl=https://github.com/theokyr/vencord-plugins
-if "%listchoice%"=="17" set pluginurl=https://github.com/coreknee/VencordPlugins
+if "%listchoice%"=="1" set pluginurl=https://github.com/Syncxv/vc-message-logger-enhanced
+if "%listchoice%"=="2" set pluginurl=https://github.com/nicola02nb/completeDiscordQuest
+if "%listchoice%"=="3" set pluginurl=https://github.com/D3SOX/vencord-userplugins
+if "%listchoice%"=="4" set pluginurl=https://github.com/NuzProjects/Vencord-Userplugins
+if "%listchoice%"=="5" set pluginurl=https://github.com/k1ng0p/LastOnlineTracker
+if "%listchoice%"=="6" set pluginurl=https://github.com/Ondra-D/vencord-activity-tracker
+if "%listchoice%"=="7" set pluginurl=https://github.com/KassieKitsune/pkPrism
+if "%listchoice%"=="8" set pluginurl=https://github.com/nexpid/vc-songSpotlight
+if "%listchoice%"=="9" set pluginurl=https://github.com/wakatime/vencord-wakatime
 
 if "%pluginurl%"=="" (
     echo.
